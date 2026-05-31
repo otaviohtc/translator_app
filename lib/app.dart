@@ -12,7 +12,10 @@ class App extends StatelessWidget {
       title: 'Translator App',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6366F1),
+          brightness: Brightness.light,
+        ),
       ),
       home: const TranslatorPage(),
     );
@@ -114,33 +117,51 @@ class _TranslatorPageState extends State<TranslatorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Translator App'),
-        centerTitle: true,
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Flag buttons - Row 1
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildFlagButton('Spain', '🇪🇸', 'es'),
-                  _buildFlagButton('France', '🇫🇷', 'fr'),
-                  _buildFlagButton('USA', '🇺🇸', 'en'),
-                ],
+              // Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  'Super Tradutor',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              // Flag buttons - Row 2
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              const SizedBox(height: 30),
+              // Language buttons grid
+              GridView.count(
+                crossAxisCount: 3,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
                 children: [
-                  _buildFlagButton('Brazil', '🇧🇷', 'pt'),
-                  _buildFlagButton('Germany', '🇩🇪', 'de'),
-                  _buildFlagButton('Italy', '🇮🇹', 'it'),
+                  _buildLanguageButton('Espanhol', '🇪🇸', 'es'),
+                  _buildLanguageButton('Francês', '🇫🇷', 'fr'),
+                  _buildLanguageButton('Inglês', '🇺🇸', 'en'),
+                  _buildLanguageButton('Português', '🇧🇷', 'pt'),
+                  _buildLanguageButton('Alemão', '🇩🇪', 'de'),
+                  _buildLanguageButton('Italiano', '🇮🇹', 'it'),
+                  _buildLanguageButton('Grego', '🇬🇷', 'el'),
+                  _buildLanguageButton('Japonês', '🇯🇵', 'ja'),
+                  _buildLanguageButton('Russo', '🇷🇺', 'ru'),
                 ],
               ),
               const SizedBox(height: 40),
@@ -151,10 +172,16 @@ class _TranslatorPageState extends State<TranslatorPage> {
                     child: TextField(
                       controller: _textController,
                       decoration: InputDecoration(
-                        hintText: 'Insira o texto que deseje traduzir',
+                        hintText: 'Digite o texto a traduzir',
+                        prefixIcon: const Icon(Icons.text_fields),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         contentPadding: const EdgeInsets.all(16),
                       ),
                       maxLines: 3,
@@ -164,7 +191,9 @@ class _TranslatorPageState extends State<TranslatorPage> {
                   if (!kIsWeb)
                     FloatingActionButton(
                       onPressed: _startListening,
-                      backgroundColor: _isListening ? Colors.red : Colors.blue,
+                      backgroundColor: _isListening
+                          ? Theme.of(context).colorScheme.error
+                          : Theme.of(context).colorScheme.primary,
                       child: Icon(_isListening ? Icons.mic : Icons.mic_none),
                     ),
                 ],
@@ -176,29 +205,34 @@ class _TranslatorPageState extends State<TranslatorPage> {
               else if (_translatedText.isNotEmpty)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Traduzido:',
+                      Text(
+                        'Traduzido',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
                         _translatedText,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ],
@@ -211,27 +245,51 @@ class _TranslatorPageState extends State<TranslatorPage> {
     );
   }
 
-  Widget _buildFlagButton(String country, String flag, String languageCode) {
-    return ElevatedButton(
-      onPressed: () => _translate(languageCode),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            flag,
-            style: const TextStyle(fontSize: 32),
+  Widget _buildLanguageButton(
+      String languageName, String flag, String languageCode) {
+    return Material(
+      child: InkWell(
+        onTap: () => _translate(languageCode),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withAlpha(220),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(country),
-        ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                flag,
+                style: const TextStyle(fontSize: 32),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                languageName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
