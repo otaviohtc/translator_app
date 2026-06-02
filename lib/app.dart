@@ -84,11 +84,22 @@ class _TranslatorPageState extends State<TranslatorPage> {
     }
     
     if (!_isListening) {
-      bool available = await _speechToText.initialize(
-        onError: (error) => print('Error: $error'),
-        onStatus: (status) => print('Status: $status'),
-      );
-      if (available) {
+      try {
+        bool available = await _speechToText.initialize(
+          onError: (error) => print('Speech initialization error: $error'),
+          onStatus: (status) => print('Speech status: $status'),
+        );
+        
+        if (!available) {
+          print('Speech to text not available on this device');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Microphone not available on this device')),
+            );
+          }
+          return;
+        }
+        
         setState(() => _isListening = true);
         _speechToText.listen(
           onResult: (result) {
@@ -96,8 +107,15 @@ class _TranslatorPageState extends State<TranslatorPage> {
               _textController.text = result.recognizedWords;
             });
           },
-          localeId: 'en_US',
+          localeId: 'pt_BR',
         );
+      } catch (e) {
+        print('Error starting speech recognition: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
       }
     } else {
       setState(() => _isListening = false);
@@ -164,7 +182,7 @@ class _TranslatorPageState extends State<TranslatorPage> {
                   _buildLanguageButton('Russo', '🇷🇺', 'ru'),
                 ],
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               // Text input field with mic button
               Row(
                 children: [
@@ -198,7 +216,7 @@ class _TranslatorPageState extends State<TranslatorPage> {
                     ),
                 ],
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               // Translated text display
               if (_isLoading)
                 const CircularProgressIndicator()
